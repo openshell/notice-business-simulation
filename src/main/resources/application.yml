@@ -1,6 +1,20 @@
 server:
   port: 3004
 spring:
+  kafka:
+    listener:
+      missing-topics-fatal: false
+      ack-mode: manual_immediate
+    bootstrap-servers: 192.168.10.44:9092  #bootstrap-servers：连接kafka的地址，多个地址用逗号分隔
+    consumer:
+      group-id: myGroup
+      enable-auto-commit: false
+      auto-commit-interval: 100ms
+      properties:
+        session.timeout.ms: 15000
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: earliest
   redis:
     port: 6379
     host: 192.168.10.74
