@@ -1,7 +1,13 @@
 package chinapopin.apply.fireproofing.outweb.component;
 
 
+import chinapopin.apply.fireproofing.outweb.listen.SseTopicListener;
+import chinapopin.apply.fireproofing.outweb.model.MsgModel;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RTopic;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -12,7 +18,7 @@ import java.util.function.Consumer;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author caiqingzhou
@@ -21,6 +27,17 @@ import java.util.function.Consumer;
 @Slf4j
 @Component
 public class SseEmitterServer {
+    @Value("${platform.notice.redis.topic}")
+    private String redisTopic;
+    @Autowired
+    private RedissonClient redissonClient;
+    @Autowired
+    private SseTopicListener sseTopicListener;
+    public static Map<String, SseEmitter> onlineUserEmittersMap = new HashMap<>(100);
+
+    public static Map<String, SseEmitter> getOnlineUserEmittersMap() {
+        return onlineUserEmittersMap;
+    }
 
     public static Map<String, SseEmitter> onlineUserMap = new HashMap<>(100);
 
@@ -29,8 +46,13 @@ public class SseEmitterServer {
         sseEmitter.onCompletion(this.completionCallBack(userId));
         sseEmitter.onError(this.onError(userId));
         sseEmitter.onTimeout(this.onTimeout(userId));
-        sseEmitter.send(String.format("%s号用户，欢迎登陆！", userId));
-        onlineUserMap.put(userId, sseEmitter);
+        onlineUserEmittersMap.put(userId, sseEmitter);
+        RTopic topic = redissonClient.getTopic(redisTopic);
+        if (topic.countListeners() == 0) {
+            topic.addListener(MsgModel.class, sseTopicListener);
+        }
+        sseEmitter.send(String.format("%s号用户，欢迎登录！", userId));
+
         return sseEmitter;
     }
 
@@ -54,8 +76,8 @@ public class SseEmitterServer {
         };
     }
 
-    public void publish(String userId, String msg) throws IOException {
-        SseEmitter sseEmitter = onlineUserMap.get(userId);
-        sseEmitter.send(msg);
+    public void publish(MsgModel msgModel) {
+        //todo持久化，避免redis导致消息丢失、避免用户不在线
+        redissonClient.getTopic(redisTopic).publish(msgModel);
     }
 }

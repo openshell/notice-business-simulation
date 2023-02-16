@@ -2,6 +2,7 @@ package chinapopin.apply.fireproofing.outweb.controller;
 
 
 import chinapopin.apply.fireproofing.outweb.component.SseEmitterServer;
+import chinapopin.apply.fireproofing.outweb.model.MsgModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,7 +32,7 @@ public class UserController {
     }
 
     @GetMapping("/user/publish/")
-    public void publish(String userId, String msg) throws IOException {
-        sseEmitterServer.publish(userId, msg);
+    public void publish(MsgModel msgModel) {
+        sseEmitterServer.publish(msgModel);
     }
 }
