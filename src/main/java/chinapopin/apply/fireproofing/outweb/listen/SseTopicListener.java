@@ -2,7 +2,6 @@ package chinapopin.apply.fireproofing.outweb.listen;
 
 import chinapopin.apply.fireproofing.outweb.component.SseEmitterServer;
 import chinapopin.apply.fireproofing.outweb.model.MsgModel;
-import cn.hutool.core.util.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.listener.MessageListener;
 import org.springframework.stereotype.Component;
@@ -23,7 +22,7 @@ public class SseTopicListener implements MessageListener<MsgModel> {
     @Override
     public void onMessage(CharSequence charSequence, MsgModel msgModel) {
         SseEmitter sseEmitter = SseEmitterServer.getOnlineUserEmittersMap().get(msgModel.getReceiveId());
-        if (ObjectUtil.isNotNull(sseEmitter)) {
+        if (sseEmitter!=null) {
             try {
                 sseEmitter.send(msgModel.getMsg());
             } catch (IOException e) {

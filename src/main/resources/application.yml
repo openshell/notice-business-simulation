@@ -24,3 +24,5 @@ platform:
   notice:
     redis:
       topic: fireproofing
+    sse:
+      timeout: 0

@@ -29,6 +29,8 @@ import java.util.function.Consumer;
 public class SseEmitterServer {
     @Value("${platform.notice.redis.topic}")
     private String redisTopic;
+    @Value("${platform.notice.sse.timeout}")
+    private String sseTimeout;
     @Autowired
     private RedissonClient redissonClient;
     @Autowired
@@ -39,10 +41,8 @@ public class SseEmitterServer {
         return onlineUserEmittersMap;
     }
 
-    public static Map<String, SseEmitter> onlineUserMap = new HashMap<>(100);
-
     public SseEmitter connect(String userId) throws IOException {
-        SseEmitter sseEmitter = new SseEmitter(0L);
+        SseEmitter sseEmitter = new SseEmitter(Long.getLong(sseTimeout));
         sseEmitter.onCompletion(this.completionCallBack(userId));
         sseEmitter.onError(this.onError(userId));
         sseEmitter.onTimeout(this.onTimeout(userId));
@@ -65,14 +65,14 @@ public class SseEmitterServer {
     private Consumer<Throwable> onError(String userId) {
         return throwable -> {
             log.error("用户{}连接异常", userId);
-            onlineUserMap.remove(userId);
+            onlineUserEmittersMap.remove(userId);
         };
     }
 
     private Runnable completionCallBack(String userId) {
         return () -> {
             log.info("用户{}连接结束", userId);
-            onlineUserMap.remove(userId);
+            onlineUserEmittersMap.remove(userId);
         };
     }
 

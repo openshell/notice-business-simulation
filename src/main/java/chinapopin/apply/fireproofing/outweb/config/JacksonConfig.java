@@ -15,7 +15,7 @@ import java.time.format.DateTimeFormatter;
 
 /**
  * <p>
- *     配置：
+ * 配置：
  * https://blog.csdn.net/weixin_38413579/article/details/82850964
  * https://zhuanlan.zhihu.com/p/69531219
  * https://segmentfault.com/a/1190000023346414?utm_source=sf-similar-article
@@ -40,9 +40,6 @@ public class JacksonConfig {
 
         //LocalDateTime系列序列化和反序列化模块，继承自jsr310
         JavaTimeModule javaTimeModule = new JavaTimeModule();
-        // 自定义 全局把返回时间转为 时间戳
-        javaTimeModule.addSerializer(LocalDateTime.class, new TemporalAccessorToLongSerializer());
-        javaTimeModule.addSerializer(LocalDate.class, new TemporalAccessorToLongSerializer());
 
         // 自定义 全局把入参时间转为 时间戳
         javaTimeModule.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)));
